@@ -13,9 +13,26 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [currentDay, setCurrentDay] = useState(1);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [userData, setUserData] = useState<Record<string, UserSessionData>>({});
+  const [userData, setUserData] = useState<Record<string, UserSessionData>>(() => {
+    const saved = localStorage.getItem('guest_user_data');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return {};
+      }
+    }
+    return {};
+  });
   const [showToast, setShowToast] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Persistence for Guest
+  useEffect(() => {
+    if (user?.uid === 'guest') {
+      localStorage.setItem('guest_user_data', JSON.stringify(userData));
+    }
+  }, [userData, user]);
 
   // Auth observer
   useEffect(() => {
@@ -113,6 +130,58 @@ export default function App() {
     return d.C?.trim() || d.F?.trim() || d.O?.trim() || (d.takeaways || []).some(t => t?.trim()) || d.reflect?.trim();
   };
 
+  const copySection = async (sid: string) => {
+    const s = ALL_SESSIONS.find(session => session.id === sid);
+    if (!s) return;
+    
+    // Get fresh data from state
+    const d = userData[sid] || { C: '', F: '', O: '', takeaways: [], reflect: '', action: '', area: '', deadline: '' };
+    
+    let out = `QUEENS OF AI SUMMIT — SESSION NOTES\n`;
+    out += `Session: ${s.title}\n`;
+    out += `Speaker: ${s.speaker}\n`;
+    out += `Category: ${s.cat}\n`;
+    out += `${'='.repeat(40)}\n\n`;
+    
+    out += `[CFO FILTER]\n`;
+    out += `C (Clarity): ${d.C?.trim() || '(None entered)'}\n`;
+    out += `F (Foundation): ${d.F?.trim() || '(None entered)'}\n`;
+    out += `O (Outcome): ${d.O?.trim() || '(None entered)'}\n\n`;
+    
+    out += `[MY TOP 10 TAKEAWAYS]\n`;
+    const takeaways = d.takeaways || Array(10).fill('');
+    const typedTakeaways = takeaways.filter(t => t?.trim());
+    if (typedTakeaways.length > 0) {
+      typedTakeaways.forEach((t, j) => {
+        out += `${j + 1}. ${t.trim()}\n`;
+      });
+    } else {
+      out += `(No takeaways entered yet)\n`;
+    }
+    out += '\n';
+    
+    if (d.reflect?.trim()) {
+      out += `[REFLECTION]\n${d.reflect.trim()}\n\n`;
+    }
+    
+    out += `[CFO-LEVEL STRATEGY]\n${s.cfo}\n\n`;
+    
+    if (d.action?.trim()) {
+      out += `[MY MOVE]\nAction: ${d.action.trim()}\n`;
+      const areaObj = AREAS.find(a => a.id === d.area);
+      if (areaObj) out += `Focus Area: ${areaObj.label}\n`;
+      if (d.deadline) out += `Target Date: ${d.deadline}\n`;
+    }
+    
+    try {
+      await navigator.clipboard.writeText(out);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2500);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  };
+
   const copyAll = async () => {
     let out = 'QUEENS OF AI SUMMIT — SESSION GUIDE\nClarity. Foundation. Outcome.\nKaryn Buggs | AI Pro CFO | KB Training Group\n' + '='.repeat(60) + '\n\n';
     
@@ -185,7 +254,7 @@ export default function App() {
           onClick={() => setUser({ uid: 'guest', email: 'guest@example.com' } as any)}
           className="text-sm text-[#0D1B3E] underline font-medium"
         >
-          Continue as Guest (Notes won't be saved)
+          Continue as Guest (Notes saved only on this device)
         </button>
       </div>
     );
@@ -267,10 +336,19 @@ export default function App() {
             exit={{ opacity: 0, x: -10 }}
             className="space-y-4"
           >
-            <div className="bg-[#0D1B3E] rounded-xl p-4 text-center">
-              <div className="text-[10px] text-[#E8C97A] uppercase tracking-widest mb-1">{s.cat} • Day {s.day}</div>
-              <div className="text-xs text-[#E8C97A] italic mb-1">{s.speaker}</div>
-              <div className="text-base font-medium text-[#C9A84C] leading-tight">{s.title}</div>
+            <div className="bg-[#0D1B3E] rounded-2xl p-6 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-[#C9A84C]" />
+              <button 
+                onClick={() => copySection(s.id)}
+                className="absolute right-4 top-4 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-[#C9A84C] flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm"
+                title="Copy this section"
+              >
+                <Clipboard className="w-3.5 h-3.5" />
+                <span>Copy Section</span>
+              </button>
+              <div className="text-[10px] text-[#E8C97A] uppercase tracking-widest mb-1 opacity-80">{s.cat} • Day {s.day}</div>
+              <div className="text-xs text-[#E8C97A] italic mb-2">{s.speaker}</div>
+              <div className="text-lg font-bold text-white leading-tight">{s.title}</div>
             </div>
 
             {/* CFO Card */}

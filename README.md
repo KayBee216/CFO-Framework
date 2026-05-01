@@ -40,11 +40,18 @@ Your session data is stored securely in **Google Cloud Firestore**. You can view
 6. Use the **Copy completed guide** button at the end of the summit to export your notes.
 
 ---
-*Last Updated: May 1, 2026 - 9:35 AM*
+*Last Updated: May 1, 2026 - 9:45 AM*
 
 ## 🚀 Deployment to GitHub Pages
 
 This app is configured to automatically deploy to GitHub Pages via GitHub Actions.
+
+**If you see a "Get Pages site failed" error in GitHub Actions:**
+1. Go to your repository on GitHub.
+2. Click **Settings** (top tab).
+3. Click **Pages** (left sidebar).
+4. Under **Build and deployment** > **Source**, change the dropdown to **GitHub Actions**.
+5. The next time you commit a change from AI Studio, it will deploy successfully.
 
 1.  **Sync your code** from AI Studio to your GitHub repository (`CFO-Framework`).
 2.  Go to your repository on GitHub.
