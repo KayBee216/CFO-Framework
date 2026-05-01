@@ -39,6 +39,9 @@ Your session data is stored securely in **Google Cloud Firestore**. You can view
 5. Add a **Reflection** and name your **Move** (actionable task).
 6. Use the **Copy completed guide** button at the end of the summit to export your notes.
 
+---
+*Last Updated: May 1, 2026 - 9:35 AM*
+
 ## 🚀 Deployment to GitHub Pages
 
 This app is configured to automatically deploy to GitHub Pages via GitHub Actions.
