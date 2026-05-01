@@ -155,7 +155,7 @@ export const ALL_SESSIONS = [
     day: 2,
     id: 'd2s8',
     title: 'The future of AI and how you need to position yourself and your business right now',
-    speaker: 'Sheila Kay and Dr. Kim',
+    speaker: 'Dr. Kim',
     cat: 'Future of AI',
     reflect: 'Based on everything you heard across both days, what is the one positioning shift your business needs before the end of this year?',
     cfo: 'Before you leave this summit answer three questions. Do you have clarity on the problem you are solving with AI? Is your foundation ready? Can you define the outcome you are measuring? That is your CFO check.'
