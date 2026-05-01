@@ -25,7 +25,31 @@ export default function App() {
     return {};
   });
   const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState('Copied to clipboard');
   const [saving, setSaving] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      await loginWithGoogle();
+    } catch (err: any) {
+      console.error('Login Error:', err);
+      if (err?.code === 'auth/popup-blocked') {
+        setAuthError('Popup blocked! Please allow popups for this site.');
+      } else if (err?.code === 'auth/operation-not-allowed') {
+        setAuthError('Google Login is not yet enabled. Try again in a minute.');
+      } else if (err?.code === 'auth/popup-closed-by-user') {
+        setAuthError('Sign-in window closed. Please try again.');
+      } else {
+        setAuthError(`Sign in failed: ${err.message || 'Please try again.'}`);
+      }
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   // Persistence for Guest
   useEffect(() => {
@@ -175,6 +199,7 @@ export default function App() {
     
     try {
       await navigator.clipboard.writeText(out);
+      setToastMsg('Copied session to clipboard');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2500);
     } catch (err) {
@@ -212,6 +237,7 @@ export default function App() {
 
     try {
       await navigator.clipboard.writeText(out);
+      setToastMsg('Full guide copied to clipboard');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 2500);
     } catch (err) {
@@ -240,11 +266,29 @@ export default function App() {
             <p className="text-gray-600">A CFO's Framework for Better Business Decisions</p>
           </div>
           <button
-            onClick={loginWithGoogle}
-            className="w-full flex items-center justify-center gap-3 bg-[#0D1B3E] text-[#C9A84C] py-3 rounded-xl font-semibold hover:bg-[#162850] transition-colors mb-4"
+            onClick={handleLogin}
+            disabled={authLoading}
+            className="w-full flex items-center justify-center gap-3 bg-[#0D1B3E] text-[#C9A84C] py-3 rounded-xl font-semibold hover:bg-[#162850] transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign in to Save Your Notes
+            {authLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Opening Sign In...</span>
+              </>
+            ) : (
+              <>
+                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center p-1">
+                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                </div>
+                <span>Sign in to Save Your Notes</span>
+              </>
+            )}
           </button>
+          {authError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-xs text-center font-medium">
+              {authError}
+            </div>
+          )}
           <p className="text-[10px] text-center text-gray-400">
             Sign in with Google to save your reflections and progress across devices.
           </p>
@@ -537,7 +581,7 @@ export default function App() {
                 exit={{ opacity: 0, y: 10 }}
                 className="bg-[#0D1B3E] text-[#C9A84C] px-6 py-3 rounded-xl text-sm shadow-2xl flex items-center gap-3"
               >
-                <CheckCircle2 className="w-5 h-5" /> Copied to clipboard
+                <CheckCircle2 className="w-5 h-5" /> {toastMsg}
               </motion.div>
             )}
           </AnimatePresence>
