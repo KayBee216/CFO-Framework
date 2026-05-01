@@ -41,6 +41,8 @@ export default function App() {
         setAuthError('Popup blocked! Please allow popups for this site.');
       } else if (err?.code === 'auth/operation-not-allowed') {
         setAuthError('Google Login is not yet enabled. Try again in a minute.');
+      } else if (err?.code === 'auth/unauthorized-domain') {
+        setAuthError(`This domain (${window.location.hostname}) is not authorized in Firebase. Please add it to your Authorized Domains in the Firebase Console.`);
       } else if (err?.code === 'auth/popup-closed-by-user') {
         setAuthError('Sign-in window closed. Please try again.');
       } else {
@@ -255,50 +257,61 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5f5f3] p-6">
+      <div 
+        className="min-h-screen flex flex-col items-center justify-center p-6 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: 'linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%), url("/background.png")',
+          backgroundColor: '#E0C3FC' 
+        }}
+      >
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-[#e0e0e0] mb-6"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20 mb-6"
         >
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-[#0D1B3E] mb-2">Queens of AI Summit</h1>
-            <p className="text-gray-600">A CFO's Framework for Better Business Decisions</p>
+            <p className="text-gray-600 font-medium">AI ROI & Readiness</p>
           </div>
           <button
             onClick={handleLogin}
             disabled={authLoading}
-            className="w-full flex items-center justify-center gap-3 bg-[#0D1B3E] text-[#C9A84C] py-3 rounded-xl font-semibold hover:bg-[#162850] transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 bg-[#0D1B3E] text-[#C9A84C] py-4 rounded-xl font-bold text-lg hover:bg-[#162850] active:scale-95 transition-all mb-4 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
             {authLoading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Opening Sign In...</span>
+                <span>Connecting...</span>
               </>
             ) : (
               <>
-                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center p-1">
+                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center p-1 shadow-sm">
                   <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
                 </div>
-                <span>Sign in to Save Your Notes</span>
+                <span>Sign in with Google</span>
               </>
             )}
           </button>
+          
           {authError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-xs text-center font-medium">
-              {authError}
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center leading-relaxed font-medium">
+              <p className="mb-2">⚠️ {authError}</p>
             </div>
           )}
-          <p className="text-[10px] text-center text-gray-400">
-            Sign in with Google to save your reflections and progress across devices.
+
+          <p className="text-[11px] text-center text-gray-400 mb-2">
+            Sign in to save your reflections across all devices.
           </p>
+          <div className="pt-6 border-t border-gray-100 text-center">
+            <p className="text-xs text-gray-400">May 1 & 2, 2026</p>
+          </div>
         </motion.div>
         
         <button 
           onClick={() => setUser({ uid: 'guest', email: 'guest@example.com' } as any)}
-          className="text-sm text-[#0D1B3E] underline font-medium"
+          className="text-sm text-white underline font-medium drop-shadow-md"
         >
-          Continue as Guest (Notes saved only on this device)
+          Continue as Guest (Local Save Only)
         </button>
       </div>
     );
