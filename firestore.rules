@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation for UserSession
+    function isValidUserSession(data) {
+      return data.keys().hasAll(['C', 'F', 'O', 'takeaways', 'reflect', 'action', 'area', 'deadline', 'updatedAt'])
+        && data.keys().size() == 9
+        && data.C is string && data.C.size() <= 2000
+        && data.F is string && data.F.size() <= 2000
+        && data.O is string && data.O.size() <= 2000
+        && data.takeaways is list && data.takeaways.size() <= 10
+        && data.reflect is string && data.reflect.size() <= 2000
+        && data.action is string && data.action.size() <= 500
+        && data.area is string && data.area.size() <= 50
+        && data.deadline is string && data.deadline.size() <= 50
+        && data.updatedAt == request.time;
+    }
+
+    match /users/{userId}/sessions/{sessionId} {
+      allow list: if isOwner(userId);
+      allow get: if isOwner(userId) && isValidId(sessionId);
+      allow create: if isOwner(userId) && isValidId(sessionId) && isValidUserSession(incoming());
+      allow update: if isOwner(userId) && isValidId(sessionId) && isValidUserSession(incoming());
+      allow delete: if isOwner(userId) && isValidId(sessionId);
+    }
+  }
+}

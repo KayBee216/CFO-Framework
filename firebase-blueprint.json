@@ -1,0 +1,31 @@
+{
+  "entities": {
+    "UserSession": {
+      "title": "User Session Progress",
+      "description": "Stores user inputs for a specific summit session.",
+      "type": "object",
+      "properties": {
+        "C": { "type": "string", "description": "Clarity" },
+        "F": { "type": "string", "description": "Foundation" },
+        "O": { "type": "string", "description": "Outcome" },
+        "takeaways": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "List of 10 takeaways"
+        },
+        "reflect": { "type": "string", "description": "Reflection" },
+        "action": { "type": "string", "description": "One thing to do differently" },
+        "area": { "type": "string", "description": "Business area ID" },
+        "deadline": { "type": "string", "description": "Deadline date string" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last updated timestamp" }
+      },
+      "required": ["C", "F", "O", "takeaways", "reflect", "action", "area", "deadline", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}/sessions/{sessionId}": {
+      "schema": "UserSession",
+      "description": "User's progress on a specific session."
+    }
+  }
+}
